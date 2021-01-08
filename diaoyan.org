@@ -1,0 +1,63 @@
+* 语音调研
+** 需求：量体师单人声音录入量体信息。
+*** 场景：点击语音量体
+**** 小红系统：身高?(这部分是语音合成的)
+**** 量体师：身高170确定。
+**** 小红系统：体重?
+**** -- 量体师和客人交流了几句。--
+**** 量体师：小红同学,身高170确定.
+*** 所以不只是语音转文字。语音助手(语音问答系统)：
+**** 听懂用户的话，并给予相应的反馈。控制设备。
+**** 所以短语音就可以。
+**** 语音中要有提取数字的功能。
+**** 开始
+**** 结束(明确的结束语音，身高170确定)
+**** 后期，量体师来确定量提单。可以自己听自己声音的回放,然后修改数字。未确定的量体单保留音频，确定的不再保留。有无必要发送服务器?
+**** 关键字找到form进行填写。或者后台生成填写内容。
+**** 生成结果有漏掉或失败的？不好。应该是像锤子一样，语音和文字双记录。
+**** 抗干扰识别关键字能力。
+** 三个平台都试一遍。看哪个比较合适。
+*** 准备一段语音。
+**** 语音读入
+高170 体重60公斤 肚围30 臀围30 肩宽30 裤腰围30 连腰直裆30
+*** 科大讯飞
+**** 特点
+***** 也有语音分析，但是针对考试、电话销售等场景。
+***** 自然语音处理 关键词提取是文字的。
+**** 在线体验 https://www.xfyun.cn/services/voicedictation
+***** 识别结果
+空车也好，身高170，体重60公斤，肚围30，臀围30，肩宽30，裤腰为30，连腰只当30。
+高170，体重60公斤度为30，臀围30，肩宽30，裤裆为31连腰直当30。
+**** 发现的库。
+***** 从介绍上，感觉这个比较好,比如连腰直裆这种专业术语。
+ttps://github.com/voice-literate-programming/xunfei-clj
+飞官方SDK暂未支持Mac
+个都有借鉴意义 https://github.com/voice-literate-programming
+***** https://www.kancloud.cn/iflytek_sdk/msc_java/299246
+持Java平台开发的操作系统为 x86 或 x64 的：Windows、Linux 以及 Raspberry 。
+resource-paths ["lib/Msc.jar"]
+**** 官方文档
+ttps://www.xfyun.cn/doc/mscapi/Java/javafilelist.html
+*** 腾讯
+**** https://ai.qq.com/doc/aaiasr.shtml
+**** 分短语音和长语音。
+*** 百度
+**** https://ai.baidu.com/tech/speech
+**** 有语音内容分析 音频内容识别为文字进行返回，从中提取关键信息，对内容进行追踪、处理及打标签等操作
+**** 自助训练专属模型
+持在语音自训练平台上自助训练模型，上传词汇文本即可零代码完成训练，精准提升业务领域词汇识别率5-20%，并可专属使用
+*** 三个平台都注册一遍？讯飞不支持mac开发？先从百度开始试吧。
+** 实际操作百度sdk
+*** 注册
+ppID: 23501167
+PI Key: zWvHOjlB3kGF47GGQbddBg18
+ecret Key: jzo5Ris0x4nO0Pal6wzVQeF6HB2gIUpN
+*** 短语音识别API
+**** https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily
+**** https://github.com/Baidu-AIP/speech-demo/blob/master/rest-api-asr/java/src/main/java/com/baidu/speech/restapi/asrdemo/AsrMain.java
+**** https://github.com/Baidu-AIP/speech-demo/tree/master/rest-api-asr/postman
+*** 调用流程
+- [X] 创建账号及应用： 在 ai.baidu.com 控制台中，创建应用，勾选开通 ”语音技术“-”短语音识别、短语音识别极速版“ 能力。获取AppID、API Key、Secret Key，并通过请求鉴权接口换取 token ，详细见 “接入指南”。
+- [ ] 创建识别请求： POST 方式，音频可通过 JSON 和 RAW 两种方式提交。JSON 方式音频数据由于 base64 编码，数据会增大1/3。其他填写具体请求参数 ，详见 ”请求说明“。
+- [ ] 短语音识别请求地址： http://vop.baidu.com/server_api
+- [ ] 返回识别结果：识别结果会即刻返回，采用 JSON 格式封装，如果识别成功，识别结果放在 JSON 的 “result” 字段中，统一采用 utf-8 方式编码。详见 ”返回说明“。
