@@ -6,13 +6,16 @@
    [ring.util.codec :as codec]
    [yuyin-baidu.token :as token]
    [clojure.string :as str]
-   [clojure.java.io :as io]))
+   [clojure.java.io :as io]
+   )
+  (:import
+   [org.apache.commons.io IOUtils]))
 
 
 ;; Automatic Speech Recognition
 
 ;; 需要识别的文件
-(def ^:private file-name "16k.pcm")
+(def ^:private file-name "16k.wav")
 
 ;; string	必填	用户唯一标识，用来区分用户，计算UV值。建议填写能区分用户的机器 MAC 地址或 IMEI 码，长度为60字符以内。
 (def ^:private cuid "longlongtimeagothereisamiao")
@@ -47,17 +50,30 @@
 ;;    :scope "brain_enhanced_asr"                ;
 ;;    })
 
+;; TODO not right
 (defn file->bytes [file]
   (with-open [xin (io/input-stream file)
               xout (java.io.ByteArrayOutputStream.)]
     (io/copy xin xout)
-    (.toByteArray xout)))
+    (.toByteArray xout))
+  )
+
+;; (defn file-to-byte-array
+;;   [^java.io.File file]
+;;   (let [result (byte-array (.length file))]
+;;     (with-open [in (java.io.DataInputStream. (clojure.java.io/input-stream file))]
+;;       (.readFully in result))
+;;     result))
+
+;; (count (file-to-byte-array (io/file (io/resource "16k.wav"))))
 
 
 ;; TODO not right
 (defn file-content [file-name]
-  (codec/base64-encode (file->bytes (io/file (io/resource file-name)))))
+  (file->bytes (io/file (io/resource file-name))))
 
+(defn base64-content [file-name]
+  (codec/base64-encode (file->bytes (io/file (io/resource file-name)))))
 
 ;; RAW方式
 ;; 音频文件，读取二进制内容后，直接放在 body 中。
@@ -70,11 +86,10 @@
         content-type-str            (content-type-str file-format rate)
         content                     (file-content file-name)]
     (http/post composed-url {:content-type content-type-str
-                             ;; :body         content
-                             :multipart-params [{:name "file"
-                                                 :content content
-                                                 :mine-type content-type-str}]
-                             })))
+                             :body content})))
+
+;; (raw-post (token/get-access-token))
+
 
 ;; JSON 方式
 ;; 音频文件，读取二进制内容后，进行 base64 编码后放在 speech 参数内。
@@ -85,8 +100,8 @@
   (let [{:keys [url dev_pid lm_id]} asr-normal-config
         file   (io/file (io/resource file-name))
         len    (.length file)
-        speech (file-content file-name) ;; TODO not right
-        data   {:format  "pcm" ;string 必填 语音文件的格式，pcm/wav/amr/m4a。不区分大小写。推荐pcm文件
+        speech (base64-content file-name) ;; TODO not right
+        data   {:format  "wav" ;string 必填 语音文件的格式，pcm/wav/amr/m4a。不区分大小写。推荐pcm文件
                 :rate    16000 ;int 必填 采样率，16000、8000，固定值
                 :channel 1 ;int	必填 声道数，仅支持单声道，请填写固定值 1
                 :cuid    cuid ;string 必填 用户唯一标识，用来区分用户，计算UV值。建议填写能区分用户的机器 MAC 地址或 IMEI 码，长度为60字符以内。
@@ -99,3 +114,5 @@
                 }]
     (http/post url {:body         (json/write-str data)
                     :content-type :json})))
+
+;; (json-post (token/get-access-token))
